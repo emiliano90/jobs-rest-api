@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../movies-api-rest-php"
+		},
+		{
+			"path": "../jobberwocky-extra-source"
+		}
+	],
+	"settings": {}
+}
