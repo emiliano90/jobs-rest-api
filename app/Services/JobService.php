@@ -10,6 +10,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class JobService
 {
+	//used for pagination
+	const PERPAGE = 10;
+
 	protected $internalDataSource;
 	protected $externalDataSource;
 
@@ -29,7 +32,9 @@ class JobService
 		$mergedJobs = $this->mergeJobs($internalJobs->items(), $externalJobs->items());
 		$total = $internalJobs->total() + $externalJobs->total();
 
-		return new LengthAwarePaginator($mergedJobs, $total, $internalJobs->perPage(), $internalJobs->currentPage());
+		$page = LengthAwarePaginator::resolveCurrentPage(); // Obtener el número de página actual
+
+		return new LengthAwarePaginator($mergedJobs, $total, self::PERPAGE, $page);
 	}
 
 	protected function mergeJobs($internalJobs, $externalJobs)
