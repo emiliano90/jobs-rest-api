@@ -38,9 +38,10 @@ class DecoratorJob implements JobDataSourceDec
 	//Paginate a collection
 	protected function paginateJobs(Collection $jobs): LengthAwarePaginator
 	{
-
-		$page = LengthAwarePaginator::resolveCurrentPage(); // Obtener el número de página actual
-		$currentPageItems = $jobs->forPage($page, self::PERPAGE)->values(); // Obtener los elementos de la página actual
+		// Get current page number
+		$page = LengthAwarePaginator::resolveCurrentPage();
+		// Get elements of current page
+		$currentPageItems = $jobs->forPage($page, self::PERPAGE)->values();
 
 		return new LengthAwarePaginator($currentPageItems, $jobs->count(), self::PERPAGE, $page);
 	}

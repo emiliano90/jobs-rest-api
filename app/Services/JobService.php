@@ -32,8 +32,10 @@ class JobService
 		$mergedJobs = $this->mergeJobs($internalJobs->items(), $externalJobs->items());
 		$total = $internalJobs->total() + $externalJobs->total();
 
-		$page = LengthAwarePaginator::resolveCurrentPage(); // Obtener el número de página actual
+		// Get current page number
+		$page = LengthAwarePaginator::resolveCurrentPage();
 
+		//Return paginated data
 		return new LengthAwarePaginator($mergedJobs, $total, self::PERPAGE, $page);
 	}
 
