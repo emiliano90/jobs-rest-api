@@ -25,26 +25,26 @@ Run the following command to create migrations in the databbase.
 
 ##### Job
 
-Job GET All http://localhost:8000/api/v1/jobs
+Job GET All http://localhost:8000/api/v1/jobs  
 Job GET Single http://localhost:8000/api/v1/jobs/1  
 Job POST Create http://localhost:8000/api/v1/jobs  
 Job PUT Update http://localhost:8000/api/v1/jobs/1  
 Job DELETE destroy http://localhost:8000/api/v1/jobs/1
 
-Params for filter jobs:
+Params for filter jobs:  
 optionals: name, salary_min, salary_max, country  
-Params for add data from external source
+Params for add data from external source  
 external_src = true
 
 ##### Skill
 
-Skill GET All http://localhost:8000/api/v1/skills
+Skill GET All http://localhost:8000/api/v1/skills  
 Skill GET Single http://localhost:8000/api/v1/skills/1  
 Skill POST Create http://localhost:8000/api/v1/skills  
 Skill PUT Update http://localhost:8000/api/v1/skills/1  
 Skill DELETE destroy http://localhost:8000/api/v1/skills/1
 
-Params for POST skill:
+Params for POST skill:  
 name
 
 ##### Job skills
@@ -57,7 +57,7 @@ Job skills DELETE destroy http://localhost:8000/api/v1/jobs/{job}/skills/1
 
 ##### Subscribe to notification
 
-Subscriber POST Create http://localhost:8000/api/v1/subscribe
-Params:
-mail
+Subscriber POST Create http://localhost:8000/api/v1/subscribe  
+Params:  
+mail  
 optionals: job_name, job_salary_min, job_salary_max, job_country
