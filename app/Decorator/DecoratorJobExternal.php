@@ -16,12 +16,19 @@ class DecoratorJobExternal extends DecoratorJob
 {
 	public function getJobs(Request $request): Collection
 	{
+		Log::info("getJobs ExternalJobDataSource");
 		//Fetch jobs
 		$externalJobs = $this->fetchExternalJobs($request);
 		// Transform the external data if necessary
 		$externalJobs = $this->modifyExternalJobs($externalJobs);
 		//Merge external jobs with parent jobs and return data.
 		return $this->mergeJobs(parent::getJobs($request), $externalJobs);
+	}
+
+	public function getPaginatedJobs(Request $request): LengthAwarePaginator
+	{
+		Log::info("DecoratorJobExternal getPaginatedJobs");
+		return parent::getPaginatedJobs($request);
 	}
 
 	private function fetchExternalJobs(Request $request): Collection

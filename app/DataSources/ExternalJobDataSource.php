@@ -4,31 +4,37 @@ namespace App\DataSources;
 
 // Implement a concrete class for the external data source
 
+use App\Contracts\Estructura;
 use App\Contracts\JobDataSource;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ExternalJobDataSource implements JobDataSource
 {
-	public function getJobs(Request $request): LengthAwarePaginator
+	private string $url;
+	private Estructura $estructura;
+	public function __construct(string $url, Estructura $estructura = null)
 	{
+		$this->url = $url;
+		$this->estructura = $estructura;
+	}
+	public function getJobs(Request $request): Collection
+	{
+		Log::info("getJobs ExternalJobDataSource");
 		//Fetch jobs
 		$externalJobs = $this->fetchExternalJobs();
 		// Transform the external data if necessary
-		$externalJobs = $this->modifyExternalJobs($externalJobs);
-		//Paginate jobs and return
-		return new LengthAwarePaginator($externalJobs->all(), $externalJobs->count(), $perPage = 10);
+		return $this->estructura->modifyJobs($externalJobs);
 	}
 
 	private function fetchExternalJobs(): Collection
 	{
 		try {
 			//Fetch data from external_jobs_url
-			$response = Http::get(config('services.external_jobs_url'));
+			$response = Http::get($this->url);
 			//Convert to collection and return
 			return $response->collect();
 		} catch (Exception $e) {
@@ -39,17 +45,4 @@ class ExternalJobDataSource implements JobDataSource
 		}
 	}
 
-	//Modify external jobs adding key to collection
-	//Aditionally we could remove undesired data -->to do
-	private function modifyExternalJobs(Collection $external_jobs): Collection
-	{
-		return $external_jobs->map(function ($job) {
-			return [
-				'name' => $job[0],
-				'salary' => $job[1],
-				'country' => $job[2],
-				'skills' => $job[3]
-			];
-		});
-	}
 }

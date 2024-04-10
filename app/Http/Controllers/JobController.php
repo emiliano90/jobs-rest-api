@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\FactoryJobServiceInterface;
+use App\DataSources\EstructuraJson;
+use App\DataSources\InternalJobDataSource;
+use App\DataSources\ExternalJobDataSource;
+use App\DataSources\InfoJobDataSource;
 use App\Decorator\DecoratorJobExternal;
 use App\Decorator\DecoratorJobInternal;
 use App\Events\NewJobCreated;
@@ -12,19 +17,20 @@ use App\Services\JobService;
 use App\Services\JobServiceConc;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class JobController extends Controller
 {
 
-	protected $jobService;
-	protected $jobServiceConc;
+	protected JobService $jobService;
+	protected FactoryJobServiceInterface $factoryJobService;
 
-	public function __construct(JobService $jobService, JobServiceConc $jobServiceConc)
+	public function __construct(JobService $jobService, FactoryJobServiceInterface $factoryJobService)
 	{
 		$this->jobService = $jobService; //this is for use proxy pattern
-		$this->jobServiceConc = $jobServiceConc; //this is for use decorator pattern
+		$this->factoryJobService = $factoryJobService; //this is for use decorator pattern
 	}
 
 
@@ -33,16 +39,24 @@ class JobController extends Controller
 	 */
 	public function index(Request $request)
 	{
+		/*
 		//Using decorator pattern
-		$this->jobServiceConc = new DecoratorJobInternal($this->jobServiceConc);
 		if ($request->has('external_src') && $request->input('external_src') === "true")
-			$this->jobServiceConc = new DecoratorJobExternal($this->jobServiceConc);
-
-		return $this->jobServiceConc->getPaginatedJobs($request);
-
-		//using proxy pattern
-		//$mergedJobs = $this->jobService->getMergedJobs($request);
-		//return (new MergedJobCollection($mergedJobs))->response();
+		{
+			Log::info("external_src = true");
+			return $this->factoryJobService->create(true)->getPaginatedJobs($request);
+		}
+		else{
+			Log::info("external_src  = false");
+			return $this->factoryJobService->create(false)->getPaginatedJobs($request);
+		}
+		*/
+		if ($request->has('external_src') && $request->input('external_src') === "true")
+			$this->jobService->addDataSource(new ExternalJobDataSource(config('services.external_jobs_url'), new EstructuraJson()));
+		$this->jobService->addDataSource(new InternalJobDataSource());
+		//using composite pattern
+		return $this->jobService->getMergedJobs($request);
+		
 	}
 
 
@@ -117,6 +131,9 @@ class JobController extends Controller
 
 
 		Log::info("Job ID {$job->id} updated successfully.");
+
+		// fire event, notify subscribers
+		event(new NewJobCreated($job));
 
 		return (new JobResource($job))->response();
 	}

@@ -7,7 +7,7 @@ namespace App\Contracts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-interface JobDataSource
+interface Estructura
 {
-	public function getJobs(Request $request): Collection;
+	public function modifyJobs(Collection $external_jobs): Collection;
 }

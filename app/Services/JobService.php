@@ -7,41 +7,53 @@ namespace App\Services;
 use App\Contracts\JobDataSource;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use SplObjectStorage;
 
 class JobService
 {
 	//used for pagination
 	const PERPAGE = 10;
 
-	protected $internalDataSource;
-	protected $externalDataSource;
-
-	public function __construct(JobDataSource $internalDataSource, JobDataSource $externalDataSource)
+	protected SplObjectStorage $dataSources;
+	
+	public function __construct()
 	{
-		$this->internalDataSource = $internalDataSource;
-		$this->externalDataSource = $externalDataSource;
+		$this->dataSources = new SplObjectStorage ();
 	}
 
-	public function getMergedJobs(Request $request)
+	public function addDataSource(JobDataSource $dataSource)
 	{
+		$this->dataSources->attach($dataSource);
+	}
 
-		$internalJobs = $this->internalDataSource->getJobs($request);
-		$externalJobs = $this->externalDataSource->getJobs($request);
+	public function removeDataSource(JobDataSource $dataSource)
+	{
+		$this->dataSources->detach($dataSource);
+	}
 
-		// Merge and paginate jobs
-		$mergedJobs = $this->mergeJobs($internalJobs->items(), $externalJobs->items());
-		$total = $internalJobs->total() + $externalJobs->total();
+	public function getMergedJobs(Request $request) : LengthAwarePaginator
+	{
+		$mergedJobs = new Collection([]);
+		foreach($this->dataSources as $dataSource){
+			$jobs = $dataSource->getJobs($request);
+			$mergedJobs = $this->mergeJobs($mergedJobs, $jobs);
+		}
+		$count = $this->dataSources->count();
+		Log::info("DataSources Count: $count ");
 
 		// Get current page number
 		$page = LengthAwarePaginator::resolveCurrentPage();
 
+		$currentPageItems = $mergedJobs->forPage($page, self::PERPAGE)->values();
 		//Return paginated data
-		return new LengthAwarePaginator($mergedJobs, $total, self::PERPAGE, $page);
+		return new LengthAwarePaginator($currentPageItems, $currentPageItems->count(), self::PERPAGE, $page);
 	}
 
-	protected function mergeJobs($internalJobs, $externalJobs)
+	protected function mergeJobs($jobs1, $jobs2)
 	{
 		//Job merge logic
-		return array_merge($internalJobs, $externalJobs);
+		return $jobs1->merge($jobs2);
 	}
 }

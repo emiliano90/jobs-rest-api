@@ -6,6 +6,7 @@ use App\Contracts\JobDataSourceDec;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class DecoratorJob implements JobDataSourceDec
 {
@@ -32,6 +33,7 @@ class DecoratorJob implements JobDataSourceDec
 	//Return a paginated jobs
 	public function getPaginatedJobs(Request $request): LengthAwarePaginator
 	{
+		Log::info("DecoratorJob getPaginatedJobs");
 		return $this->paginateJobs($this->getJobs($request));
 	}
 

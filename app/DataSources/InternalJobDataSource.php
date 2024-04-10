@@ -8,16 +8,18 @@ use App\Contracts\JobDataSource;
 use App\Models\Job;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class InternalJobDataSource implements JobDataSource
 {
-	public function getJobs(Request $request): LengthAwarePaginator
+	public function getJobs(Request $request): Collection
 	{
+		Log::info("getJobs InternalJobDataSource");
 		//Add filters
 		$query = $this->applyFilters(Job::query(), $request);
 		//Get data paginated
-		return $query->paginate();
+		return $query->get();
 	}
 
 	//Create query based on the request
